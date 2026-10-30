@@ -28,10 +28,26 @@ services:
     volumes:
       # Named volume => /docker-entrypoint-initdb.d runs ONLY when it is empty.
       - postgres_data:/var/lib/postgresql/data
-      - ./initdb:/docker-entrypoint-initdb.d:ro
-      - ./initdb/sql:/sql:ro            # addenda re-runnable by hand (psql -v ON_ERROR_STOP=1)
+      # Two deliberately separate mounts (this is what broke first boot):
+      #   * initdb/hooks -> /docker-entrypoint-initdb.d : ONLY the executable .sh
+      #     hooks. Mounting the whole ./initdb directory instead also drops
+      #     ./initdb/sql into the entrypoint path, and postgres aborts on the
+      #     first file it cannot exec:
+      #       docker-entrypoint.sh: line 185: /docker-entrypoint-initdb.d/xxx.sh:
+      #       cannot execute: required file not found
+      #     That message never means "package missing" — it means a bad interpreter
+      #     in the shebang or CRLF line endings (Windows checkout / git
+      #     core.autocrlf), i.e. "/bin/sh\r" does not exist. Keep every hook POSIX
+      #     sh (`set -eu`, no pipefail), LF-only and chmod +x.
+      #   * initdb/sql -> /sql : plain SQL, read explicitly by the hooks with
+      #     `psql -f`, and still available for manual re-runs once the volume exists.
+      - ./initdb/hooks:/docker-entrypoint-initdb.d:ro
+      - ./initdb/sql:/sql:ro
     healthcheck:                        # gates odoo + pgadmin `depends_on`
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${ODOO_DB} && pg_isready -U $${POSTGRES_USER} -d $${DENSAMED_DB}"]
+      # Only $DENSAMED_DB is probed: the Odoo image creates its own database at
+      # first start, so requiring $ODOO_DB here would keep db "unhealthy" forever
+      # and the odoo service would never be allowed to start.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${DENSAMED_DB}"]
       interval: 5s
       timeout: 5s
       start_period: 20s                 # lets initdb scripts (schema+seed) finish first
