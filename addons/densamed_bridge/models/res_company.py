@@ -29,7 +29,7 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     # Join key for EVERY downstream sync. Named x_densamed_branch_id per spec.
-    x_densamed_branch_id = fields.BigInt(
+    x_densamed_branch_id = fields.Integer(
         string='DensaMed Branch ID', copy=False, index=True, tracking=True,
         help='Primary key of the row in densamed.public.branches this company '
              'mirrors. Never reuse: every other mapper resolves branch_id '

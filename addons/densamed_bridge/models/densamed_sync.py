@@ -130,7 +130,7 @@ class DensamedSync(models.AbstractModel):
                 'categ_id': pharma.id,
                 'uom_id': uom.id,
                 'uom_po_id': uom.id,
-                'lst_price': float(row['retail_price']),
+                'list_price': float(row['retail_price']),
                 'min_stock': row.get('min_stock') or 0,
                 'requires_prescription': bool(row.get('requires_prescription')),
                 'generic_name': row.get('generic_name') or False,
@@ -145,6 +145,7 @@ class DensamedSync(models.AbstractModel):
         Conn = self.env['densamed.connection']
         Partner = self.env['res.partner']
         vals_list = []
+        branch_map = Conn._branch_company_map()
         for row in Conn.get_warehouses():
             code = '%s/%s' % (row['branch_code'], row['warehouse_name'][:12])
             partner = Partner.search([('ref', '=', 'WH-%d' % row['warehouse_id'])], limit=1)
@@ -155,12 +156,14 @@ class DensamedSync(models.AbstractModel):
                     'city': row.get('city') or False,
                     'type': 'other',
                 })
+            company = branch_map.get(row['branch_id'])
             vals_list.append({
                 'densamed_id': row['warehouse_id'],
                 'densamed_model': 'warehouses',
                 'name': row['warehouse_name'],
                 'code': code,
                 'partner_id': partner.id,
+                'company_id': company.id if company else False,
             })
         return self._upsert('stock.warehouse', vals_list)
 

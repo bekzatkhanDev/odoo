@@ -23,9 +23,10 @@ class StockLot(models.Model):
     days_to_expiry = fields.Integer(
         string='Days To Expiry', compute='_compute_days_to_expiry', store=True)
 
-    @api.depends('expiration_date')
+    @api.depends()
     def _compute_days_to_expiry(self):
         today = fields.Date.today()
         for lot in self:
+            exp_date = getattr(lot, 'expiration_date', None)
             lot.days_to_expiry = (
-                (lot.expiration_date - today).days if lot.expiration_date else -1)
+                (exp_date - today).days if exp_date else -1)

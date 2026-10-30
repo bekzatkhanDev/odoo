@@ -14,6 +14,6 @@ class HrEmployee(models.Model):
         ('densamed_employee_uniq', 'unique(densamed_model, densamed_id)',
          'An employee can only map to one DensaMed employees row.'),
     ]
-    x_densamed_branch_id = fields.BigInt(
+    x_densamed_branch_id = fields.Integer(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, index=True, readonly=True)

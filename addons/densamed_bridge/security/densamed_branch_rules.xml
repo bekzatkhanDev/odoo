@@ -61,9 +61,9 @@
               data, so scope it through the move lines' companies. -->
         <record id="rule_stock_packing_branch" model="ir.rule">
             <field name="name">DensaMed: packing scoped to my branch moves</field>
-            <field name="model_id" ref="stock.model_stock_packing"/>
-            <field name="domain_force">['|', ('move_line_ids.company_id', '=', False),
-                                        ('move_line_ids.company_id', 'in', company_ids)]</field>
+            <field name="model_id" ref="stock.model_stock_location"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                                        ('company_id', 'in', company_ids)]</field>
             <field name="groups" eval="[(4, ref('densamed_bridge.group_densamed_branch_user'))]"/>
             <field name="global" eval="False"/>
         </record>

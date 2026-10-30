@@ -29,7 +29,7 @@ class StockWarehouse(models.Model):
     branch_code = fields.Char(string='Branch Code', readonly=True, copy=False)
     location_description = fields.Text(string='Location Description',
                                        readonly=True, copy=False)
-    x_densamed_branch_id = fields.BigInt(
+    x_densamed_branch_id = fields.Integer(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, readonly=True, index=True)
 
@@ -39,7 +39,7 @@ class StockWarehouse(models.Model):
         derive from the mapped branch when possible."""
         if vals.get('densamed_id') and not vals.get('company_id'):
             comp = self.env['res.company'].sudo().search(
-                [('x_densamed_branch_id', '=', vals['densamed_branch_id'] or -1)],
+                [('x_densamed_branch_id', '=', vals.get('densamed_branch_id') or -1)],
                 limit=1)
             if comp:
                 vals['company_id'] = comp.id

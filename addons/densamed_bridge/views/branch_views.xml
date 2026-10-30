@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
             <tree string="DensaMed Branches">
                 <field name="x_densamed_branch_id"/>
-                <field name="partner_ref" optional="show"/>
+                <field name="x_densamed_ref" optional="show"/>
                 <field name="name"/>
                 <field name="city" optional="show"/>
                 <field name="phone" optional="hide"/>
@@ -188,9 +188,9 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_sales_order_filter"/>
         <field name="arch" type="xml">
-            <filter name="my" position="after">
+            <search position="inside">
                 <field name="x_densamed_branch_id" string="Branch"/>
-            </filter>
+            </search>
         </field>
     </record>
 
@@ -211,9 +211,9 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_internal_search"/>
         <field name="arch" type="xml">
-            <filter name="product" position="after">
+            <search position="inside">
                 <field name="x_densamed_branch_id" string="Branch"/>
-            </filter>
+            </search>
         </field>
     </record>
 
@@ -229,23 +229,8 @@
         </field>
     </record>
 
-    <record id="view_quant_search_branch" model="ir.ui.view">
-        <field name="name">stock.quant.search.branch</field>
-        <field name="model">stock.quant</field>
-        <field name="inherit_id" ref="stock.view_stock_quant_simple"/>
-        <field name="mode">extension</field>
-        <field name="arch" type="xml">
-            <search position="inside">
-                <!-- group-by Branch (stored related m2o -> valid grouping key) -->
-                <field name="x_densamed_branch_id" string="Branch"/>
-                <!-- "Current branch only": company_id is NATIVE on stock.quant
-                     (Odoo 17 core). The [1,0] fallback reads the current
-                     company injected into the search context by the client. -->
-                <filter name="current_branch_only" string="Current branch only"
-                        domain="[('company_id', '=', context.get('company_id', [1, 0])[0])]"/>
-            </search>
-        </field>
-    </record>
+        <!-- stock.quant search view inheritance removed: stock.view_stock_quant_simple
+             does not exist in Odoo 17 Community. -->
 
     <!-- ==================== DensaMed > Branches menus ====================== -->
     <menuitem id="menu_densamed_branches_root"
