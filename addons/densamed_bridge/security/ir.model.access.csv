@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_densamed_sync_user,densamed.sync user,model_densamed_sync,group_densamed_user,1,0,0,0
+access_densamed_sync_manager,densamed.sync manager,model_densamed_sync,group_densamed_manager,1,1,1,1
+access_densamed_connection_user,densamed.connection user,model_densamed_connection,group_densamed_user,1,0,0,0
+access_densamed_connection_manager,densamed.connection manager,model_densamed_connection,group_densamed_manager,1,1,1,1

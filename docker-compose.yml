@@ -1,26 +1,80 @@
+name: densamed
+
+# ---------------------------------------------------------------------------
+# DensaMed pharmacy ERP — Odoo 17 Community + PostgreSQL 16
+#
+# Two strictly separate databases live in ONE postgres instance:
+#   * ${ODOO_DB}    (odoo)     — owned by the odoo image, created by its entrypoint
+#   * ${DENSAMED_DB}(densamed) — operational/master-data schema, created + seeded
+#                                ONLY on a fresh postgres_data volume via initdb/
+# The bridge module (addons/densamed_bridge) reads densamed with psycopg2 and
+# NEVER writes to it; Odoo's stock.quant accounting stays untouched.
+# ---------------------------------------------------------------------------
+
 services:
   db:
-    image: postgres:${POSTGRES_VERSION}
+    image: postgres:${POSTGRES_VERSION:?POSTGRES_VERSION must be set in .env}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${ODOO_DB:?ODOO_DB must be set in .env}          # odoo's own DB only
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      DENSAMED_DB: ${DENSAMED_DB}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+      DENSAMED_DB: ${DENSAMED_DB:?DENSAMED_DB must be set in .env}  # read by 10-create-densamed-db.sh
+      TZ: ${TZ:-Asia/Almaty}
+      # --no-sync is safe here: data is demo/master data on a Docker volume.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C --data-checksums"
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
+      # Named volume => /docker-entrypoint-initdb.d runs ONLY when it is empty.
       - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      - ./initdb/sql:/sql:ro            # addenda re-runnable by hand (psql -v ON_ERROR_STOP=1)
+    healthcheck:                        # gates odoo + pgadmin `depends_on`
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${ODOO_DB} && pg_isready -U $${POSTGRES_USER} -d $${DENSAMED_DB}"]
       interval: 5s
       timeout: 5s
+      start_period: 20s                 # lets initdb scripts (schema+seed) finish first
       retries: 12
 
+  odoo:
+    image: odoo:${ODOO_VERSION:?ODOO_VERSION must be set in .env}
+    restart: unless-stopped
+    depends_on:                         # starts only after db passed its healthcheck
+      db:
+        condition: service_healthy
+    ports:
+      - "${ODOO_PORT:-8069}:8069"
+    environment:
+      HOST: db
+      PORT: "5432"
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${ODOO_DB}               # entrypoint creates/migrates only this DB
+      DB_FILTER: "^${ODOO_DB}$"         # odoo refuses to see/list densamed at all
+      LIST_DB: "False"
+      PGHOST: db                        # used by addons/densamed_bridge (psycopg2)
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${DENSAMED_DB}        # bridge default target = densamed, not odoo
+      DENSAMED_DB_HOST: db
+      DENSAMED_DB_PORT: "5432"
+      DENSAMED_DB_NAME: ${DENSAMED_DB}
+      DENSAMED_DB_USER: ${POSTGRES_USER}
+      DENSAMED_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ODOO_RC: /etc/odoo/odoo.conf
+    command:
+      - --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+      - --without-demo=${ODOO_WITHOUT_DEMO:-all}
+    volumes:
+      - odoo_data:/var/lib/odoo
+      - odoo_filestore:/var/lib/odoo/filestore
+      - ./addons:/mnt/extra-addons:ro   # read-only: code ships from git, not from the container
+      - ./config/odoo.conf:/etc/odoo/odoo.conf:ro
+    stop_grace_period: 60s              # let the cron sync commit before SIGKILL
+
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:${PGADMIN_VERSION:-8.11}
     restart: unless-stopped
     depends_on:
       db:
@@ -28,30 +82,14 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL must be set in .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD must be set in .env}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
-  odoo:
-    image: odoo:${ODOO_VERSION}
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "${ODOO_PORT:-8069}:8069"
-    environment:
-      HOST: db
-      PORT: 5432
-      USER: ${POSTGRES_USER}
-      PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${ODOO_DB}
-    volumes:
-      - odoo_data:/var/lib/odoo
-      - ./addons:/mnt/extra-addons:ro
-
 volumes:
-  postgres_data:
+  postgres_data:    # erase with: docker compose down -v  (re-runs initdb on next up)
   odoo_data:
+  odoo_filestore:
   pgadmin_data:

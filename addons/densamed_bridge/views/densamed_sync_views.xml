@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Server action running the whole pipeline on demand -->
+    <record id="action_densamed_sync_now" model="ir.actions.server">
+        <field name="name">DensaMed: Sync Now</field>
+        <field name="model_id" ref="model_densamed_sync"/>
+        <field name="state">code</field>
+        <field name="code">report = env['densamed.sync'].sync_all()</field>
+    </record>
+
+    <menuitem id="menu_densamed_root"
+              name="DensaMed"
+              sequence="45"
+              web_icon="densamed_bridge,static/description/icon.png"
+              groups="densamed_bridge.group_densamed_user"/>
+
+    <menuitem id="menu_densamed_sync"
+              name="Synchronisation"
+              parent="menu_densamed_root"
+              action="action_densamed_sync_now"
+              sequence="10"/>
+
+    <menuitem id="menu_densamed_cron"
+              name="Scheduled Sync"
+              parent="menu_densamed_root"
+              action="base.ir_cron_act"
+              sequence="90"
+              groups="base.group_system"/>
+
+</odoo>
