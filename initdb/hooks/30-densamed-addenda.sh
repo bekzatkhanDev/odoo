@@ -6,7 +6,7 @@
 #       -d densamed -f /sql/97-branch-addendum.sql
 set -eu
 
-for f in 97-branch-addendum.sql 99-inventory-control.sql; do
+for f in 97-branch-addendum.sql 98-inventory-control.sql 99-inventory-control.sql; do
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$DENSAMED_DB" \
          -f "/sql/${f}"
     echo "[initdb] ${f} loaded into ${DENSAMED_DB}"
