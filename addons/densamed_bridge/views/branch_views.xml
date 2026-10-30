@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================= res.company (Branch master) views ================= -->
+    <record id="view_company_branch_tree" model="ir.ui.view">
+        <field name="name">res.company.branch.tree</field>
+        <field name="model">res.company</field>
+        <field name="priority" eval="90"/>
+        <field name="arch" type="xml">
+            <tree string="DensaMed Branches">
+                <field name="x_densamed_branch_id"/>
+                <field name="partner_ref" optional="show"/>
+                <field name="name"/>
+                <field name="city" optional="show"/>
+                <field name="phone" optional="hide"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_company_branch_form" model="ir.ui.view">
+        <field name="name">res.company.branch.form</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="DensaMed Bridge">
+                    <field name="x_densamed_branch_id" readonly="1"/>
+                    <field name="is_densamed_branch" invisible="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_densamed_branch_master" model="ir.actions.act_window">
+        <field name="name">Branch Master</field>
+        <field name="res_model">res.company</field>
+        <field name="view_mode">tree,form</field>
+        <!-- Branch master list = companies carrying the DensaMed join key -->
+        <field name="domain">[('x_densamed_branch_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No branches synced yet</p>
+            <p>Run the "branches-&gt;res.company" sync (Settings ▸ DensaMed Bridge)
+               to mirror densamed.public.branches as Odoo companies.</p>
+        </field>
+    </record>
+
+    <!-- ===================== Branch Dashboard (SQL view) =================== -->
+    <record id="view_branch_dashboard_tree" model="ir.ui.view">
+        <field name="name">densamed_bridge.branch_dashboard.tree</field>
+        <field name="model">densamed_bridge.branch_dashboard</field>
+        <field name="arch" type="xml">
+            <tree string="Branch Dashboard" create="false" edit="false" delete="false">
+                <field name="branch_code"/>
+                <field name="branch_name"/>
+                <field name="warehouse_count"/>
+                <field name="lots_expiring_30"/>
+                <field name="lots_expiring_60"/>
+                <field name="lots_expiring_90"/>
+                <field name="open_po_count"/>
+                <field name="open_so_count"/>
+                <field name="qty_on_hand"/>
+                <field name="branch_active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_branch_dashboard" model="ir.actions.act_window">
+        <field name="name">Branch Dashboard</field>
+        <field name="res_model">densamed_bridge.branch_dashboard</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <!-- ================= Apply branch roles wizard (manual!) =============== -->
+    <record id="view_apply_roles_form" model="ir.ui.view">
+        <field name="name">densamed_bridge.action_apply_roles.form</field>
+        <field name="model">densamed_bridge.action_apply_roles</field>
+        <field name="arch" type="xml">
+            <form string="Apply branch roles">
+                <group>
+                    <field name="company_id"/>
+                    <field name="dry_run"/>
+                    <field name="employee_ids" widget="many2many_tags"/>
+                </group>
+                <div class="text-muted">
+                    Groups are NEVER assigned by the sync cron — review the
+                    mapping here and apply deliberately (audit trail = you).
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button special="cancel" string="Cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_apply_branch_roles" model="ir.actions.act_window">
+        <field name="name">Apply Branch Roles</field>
+        <field name="res_model">densamed_bridge.action_apply_roles</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ================= role_group_map + sync log views ================== -->
+    <record id="view_role_group_map_tree" model="ir.ui.view">
+        <field name="name">densamed_bridge.role_group_map.tree</field>
+        <field name="model">densamed_bridge.role_group_map</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="role_name"/>
+                <field name="odoo_group_xmlid"/>
+                <field name="odoo_group_id" readonly="1"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_role_group_map" model="ir.actions.act_window">
+        <field name="name">Role - Group Mapping</field>
+        <field name="res_model">densamed_bridge.role_group_map</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_sync_log_tree" model="ir.ui.view">
+        <field name="name">densamed_bridge.sync_log.tree</field>
+        <field name="model">densamed_bridge.sync_log</field>
+        <field name="arch" type="xml">
+            <tree create="false" delete="false" string="Sync Log">
+                <field name="started_at"/>
+                <field name="sync_name"/>
+                <field name="state"/>
+                <field name="rows_created"/>
+                <field name="rows_updated"/>
+                <field name="rows_skipped"/>
+                <field name="duration_ms"/>
+                <field name="error"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sync_log" model="ir.actions.act_window">
+        <field name="name">Sync Log</field>
+        <field name="res_model">densamed_bridge.sync_log</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ============ purchase.order: Branch field + filter ================= -->
+    <record id="view_purchase_order_form_branch" model="ir.ui.view">
+        <field name="name">purchase.order.form.branch</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_order']" position="after">
+                <!-- readonly; hidden unless multi-company is enabled -->
+                <field name="x_densamed_branch_id" string="Branch ID"
+                       groups="base.group_multi_company" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_purchase_order_search_branch" model="ir.ui.view">
+        <field name="name">purchase.order.search.branch</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <filter name="draft" position="before">
+                <field name="x_densamed_branch_id" string="Branch"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- ================ sale.order: Branch field + filter ================= -->
+    <record id="view_sale_order_form_branch" model="ir.ui.view">
+        <field name="name">sale.order.form.branch</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_densamed_branch_id" string="Branch ID"
+                       groups="base.group_multi_company" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sale_order_search_branch" model="ir.ui.view">
+        <field name="name">sale.order.search.branch</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <filter name="my" position="after">
+                <field name="x_densamed_branch_id" string="Branch"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- ============== stock.picking: Branch in list/search ================= -->
+    <record id="view_picking_tree_branch" model="ir.ui.view">
+        <field name="name">stock.picking.tree.branch</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="location_dest_id" position="after">
+                <field name="x_densamed_branch_id" string="Branch" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_picking_search_branch" model="ir.ui.view">
+        <field name="name">stock.picking.search.branch</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <filter name="product" position="after">
+                <field name="x_densamed_branch_id" string="Branch"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- ================ stock.quant: Branch column/group-by ================ -->
+    <record id="view_quant_tree_branch" model="ir.ui.view">
+        <field name="name">stock.quant.tree.branch</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_editable"/>
+        <field name="arch" type="xml">
+            <field name="location_id" position="after">
+                <field name="x_densamed_branch_id" string="Branch" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_quant_search_branch" model="ir.ui.view">
+        <field name="name">stock.quant.search.branch</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_simple"/>
+        <field name="mode">extension</field>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <!-- group-by Branch (stored related m2o -> valid grouping key) -->
+                <field name="x_densamed_branch_id" string="Branch"/>
+                <!-- "Current branch only": company_id is NATIVE on stock.quant
+                     (Odoo 17 core). The [1,0] fallback reads the current
+                     company injected into the search context by the client. -->
+                <filter name="current_branch_only" string="Current branch only"
+                        domain="[('company_id', '=', context.get('company_id', [1, 0])[0])]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ==================== DensaMed > Branches menus ====================== -->
+    <menuitem id="menu_densamed_branches_root"
+              name="Branches"
+              parent="menu_densamed_root"
+              sequence="20"/>
+
+    <menuitem id="menu_branch_dashboard"
+              name="Branch Dashboard"
+              parent="menu_densamed_branches_root"
+              action="action_branch_dashboard"
+              sequence="10"/>
+
+    <menuitem id="menu_branch_master"
+              name="Branch Master"
+              parent="menu_densamed_branches_root"
+              action="action_densamed_branch_master"
+              sequence="20"
+              groups="densamed_bridge.group_densamed_hq,densamed_bridge.group_densamed_branch_manager"/>
+
+    <menuitem id="menu_role_group_map"
+              name="Role - Group Map"
+              parent="menu_densamed_branches_root"
+              action="action_role_group_map"
+              sequence="30"
+              groups="densamed_bridge.group_densamed_hq"/>
+
+    <menuitem id="menu_apply_branch_roles"
+              name="Apply Branch Roles"
+              parent="menu_densamed_branches_root"
+              action="action_apply_branch_roles"
+              sequence="40"
+              groups="densamed_bridge.group_densamed_hq"/>
+
+    <menuitem id="menu_sync_log"
+              name="Sync Log"
+              parent="menu_densamed_root"
+              action="action_sync_log"
+              sequence="80"
+              groups="group_densamed_user"/>
+
+</odoo>
