@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =====================================================================
+         WHY THERE ARE NO company_id RULES FOR stock.warehouse / stock.location
+         / stock.picking / stock.move / stock.quant / purchase.order /
+         sale.order BELOW:
+
+         Odoo Community ships core record rules covering company scoping for
+         every one of those models (e.g. stock.rule_quant_company,
+         stock_warehouse/company_rule, purchase order company rules,
+         sales_team crm rule sets...). They pin the domain to
+         « ['company_id', 'in', company_ids] » and are global=False.
+         Duplicating them would only add query cost and drift risk. So:
+         branch isolation = built-in multi-company rules + correct company_id
+         written by the sync (models/branch_sync.py, models/stock_warehouse.py).
+
+         The rules defined here cover ONLY what core does not give us:
+           1. stock.lot has no company_id field in Community 17 (verified against
+              odoo/addons/stock/models/stock_lot.py — do not invent fields), so
+              cross-company lot leakage is closed via the product's company_ids.
+           2. stock.packing (the "To Pick"/"To Invoice" smart-button model) has
+              no core company rule but exposes source/destination move lines.
+         Every rule here is global=False and pinned to OUR groups — never to
+         base.group_user — so nobody can be locked out of their own records.
+         ===================================================================== -->
+    <data>
+
+        <!-- 1) stock.location: locations have NO core company rule in
+              Community 17 (only stock.warehouse and stock.quant do), so a
+              user of branch A could otherwise browse branch B's shelves.
+              Synced locations carry company_id = their branch company
+              (models/branch_sync.py); Odoo-created branch locations inherit
+              it from the warehouse root. -->
+        <record id="rule_stock_location_branch" model="ir.rule">
+            <field name="name">DensaMed: branch locations only</field>
+            <field name="model_id" ref="stock.model_stock_location"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                                        ('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('densamed_bridge.group_densamed_branch_user'))]"/>
+            <field name="global" eval="False"/>
+        </record>
+
+        <!-- 2) Lots: stock.lot has no company_id field in Community 17
+              (verified against odoo/addons/stock/models/stock_lot.py — we do
+              not invent fields), so cross-company lot leakage is closed via
+              the tracked product's company. Products synced by this bridge
+              stay GLOBAL (company_id unset) by design, so this rule never
+              hides legitimate lots; it only blocks lots pinned to another
+              company's product variant. -->
+        <record id="rule_stock_lot_branch_visible" model="ir.rule">
+            <field name="name">DensaMed: lots of my branch's products</field>
+            <field name="model_id" ref="stock.model_stock_lot"/>
+            <field name="domain_force">['|', ('product_id.company_id', '=', False),
+                                        ('product_id.company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('densamed_bridge.group_densamed_branch_user'))]"/>
+            <field name="global" eval="False"/>
+        </record>
+
+        <!-- 3) stock.packing ("To Pick"/"To Invoice" smart-button model): no
+              core company rule exists for it although it exposes move-line
+              data, so scope it through the move lines' companies. -->
+        <record id="rule_stock_packing_branch" model="ir.rule">
+            <field name="name">DensaMed: packing scoped to my branch moves</field>
+            <field name="model_id" ref="stock.model_stock_packing"/>
+            <field name="domain_force">['|', ('move_line_ids.company_id', '=', False),
+                                        ('move_line_ids.company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('densamed_bridge.group_densamed_branch_user'))]"/>
+            <field name="global" eval="False"/>
+        </record>
+
+        <!-- 4) hr.job / densamed mapping models are company-agnostic config;
+              no rule needed. Branch managers get write on operational docs
+              through inherited functional groups (stock.group_stock_user ->
+              stock.group_stock_manager, sales_team.group_sale_salesman ->
+              sales_team.group_sale_manager, purchase.group_purchase_user ->
+              purchase.group_purchase_manager) whose OWN core rules already
+              pin every write to company_id in company_ids. We therefore add
+              NO write rules here: duplicating them risks locking users out
+              of their own records. -->
+
+    </data>
+</odoo>

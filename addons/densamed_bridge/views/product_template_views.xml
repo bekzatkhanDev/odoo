@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_template_form_densamed" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.densamed.bridge</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[name='buttons_stat']" position="inside">
+                <div class="d-none"><field name="densamed_source"/></div>
+            </xpath>
+            <group name="group_stock" position="after">
+                <group string="DensaMed (synced, read-only)" name="densamed_info"
+                       invisible="not densamed_id">
+                    <field name="densamed_id"/>
+                    <field name="generic_name"/>
+                    <field name="dosage_form"/>
+                    <field name="manufacturer_ref"/>
+                    <field name="requires_prescription"/>
+                    <field name="min_stock"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_product_template_search_densamed" model="ir.ui.view">
+        <field name="name">product.template.search.inherit.densamed.bridge</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="consumable" position="after">
+                <separator/>
+                <filter string="From DensaMed" name="from_densamed"
+                        domain="[('densamed_id', '!=', False)]"/>
+                <filter string="Rx only" name="requires_prescription"
+                        domain="[('requires_prescription', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

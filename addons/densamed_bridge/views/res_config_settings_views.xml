@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_densamed" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.densamed.bridge</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="DensaMed" string="DensaMed Bridge" name="densamed_bridge"
+                     groups="densamed_bridge.group_densamed_manager">
+                    <block title="Operational database (read-only)"
+                           help="psycopg2 connection to the separate `densamed` PostgreSQL database. Environment variables are used when these fields are empty.">
+                        <setting string="Host" help="e.g. db (docker service name)">
+                            <field name="densamed_db_host" placeholder="db"/>
+                        </setting>
+                        <setting string="Port">
+                            <field name="densamed_db_port" placeholder="5432"/>
+                        </setting>
+                        <setting string="Database">
+                            <field name="densamed_db_name" placeholder="densamed"/>
+                        </setting>
+                        <setting string="User">
+                            <field name="densamed_db_user"/>
+                        </setting>
+                        <setting string="Password">
+                            <field name="densamed_db_password" password="True"/>
+                        </setting>
+                        <setting string="Last sync">
+                            <field name="densamed_last_sync"/>
+                        </setting>
+                        <div class="mt-8 d-flex gap-2">
+                            <button name="action_test_densamed_connection" type="object"
+                                    string="Test Connection" class="btn-primary"/>
+                            <button name="action_sync_densamed_now" type="object"
+                                    string="Sync Now" class="btn-secondary"/>
+                        </div>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

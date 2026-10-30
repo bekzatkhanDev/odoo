@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =====================================================================
+         Branch security model (Deliverable 2).
+
+         Modelling decision — recorded here because it drives everything below:
+         a DensaMed `branches` row is an Odoo res.company (NOT a warehouse, NOT
+         an analytic account). Warehouses/employees/orders/stock moves are then
+         scoped through company_id, which gives record rules, the branch
+         switcher in the header, per-company valuation and multi-company P&L
+         for free from Community core.
+
+         Visibility strategy:
+           * base.group_user already carries the CORE company record rule on
+             every model that has a company_id field (ir.rule "..." with
+             domain « ['company_id', 'in', company_ids] » or allow_company... ).
+             We deliberately DO NOT duplicate those rules — see the comment at
+             the top of densamed_branch_rules.xml.
+           * group_densamed_hq implies base.group_multi_company, so its members
+             get the built-in "can see all companies they belong to" behaviour
+             plus we add them to every synced company automatically
+             (models/res_company.py::_ensure_hq_membership).
+         ===================================================================== -->
+    <data>
+
+        <record id="module_category_densamed_branch" model="ir.module.category">
+            <field name="name">DensaMed Branches</field>
+            <field name="description">Branch (multi-company) access levels for the DensaMed chain</field>
+            <field name="sequence">31</field>
+        </record>
+
+        <!-- Branch operative: read-only everywhere outside its own company.
+             No implied_ids pointing at base.group_user: membership in
+             base.group_user is granted by the standard user-creation flow;
+             this group only ADDS the branch context + the extra lot/picking
+             read rules defined in densamed_branch_rules.xml. -->
+        <record id="group_densamed_branch_user" model="res.groups">
+            <field name="name">Branch User</field>
+            <field name="category_id" ref="module_category_densamed_branch"/>
+            <field name="comment">Sees master data and documents of its own branch (= its own company) only. Read-only on operational documents.</field>
+        </record>
+
+        <!-- Branch manager: same visibility, write on the four operational
+             document families inside its own company. Does NOT imply
+             base.group_multi_company -> cannot switch branches. -->
+        <record id="group_densamed_branch_manager" model="res.groups">
+            <field name="name">Branch Manager</field>
+            <field name="category_id" ref="module_category_densamed_branch"/>
+            <field name="implied_ids" eval="[(4, ref('group_densamed_branch_user'))]"/>
+            <field name="comment">Writes pickings / stock moves / purchase orders / sale orders within its own branch company only.</field>
+        </record>
+
+        <!-- HQ: sees everything. Implies multi-company so the branch switcher
+             appears; the member-add-on-create hook keeps its users attached to
+             every synced branch company. -->
+        <record id="group_densamed_hq" model="res.groups">
+            <field name="name">HQ (all branches)</field>
+            <field name="category_id" ref="module_category_densamed_branch"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('base.group_multi_company'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Chain headquarters: reads and reports across every branch company.</field>
+        </record>
+
+    </data>
+</odoo>
