@@ -32,8 +32,8 @@ class DensamedRoleGroupMap(models.Model):
     _description = 'DensaMed Role -> Odoo Group Mapping'
     _order = 'role_name'
 
-    densamed_id = fields.BigInt(string='DensaMed Role ID', index=True, readonly=True,
-                                copy=False, help='roles.role_id in the densamed DB')
+    densamed_id = fields.Integer(string='DensaMed Role ID', index=True, readonly=True,
+                                 copy=False, help='roles.role_id in the densamed DB')
     densamed_model = fields.Char(size=32, readonly=True, copy=False, default='roles')
     role_name = fields.Char(required=True)
     # XML id of the target group, e.g. 'stock.group_stock_user'. We store the
@@ -146,8 +146,8 @@ class DensamedBridgeRole(models.Model):
     _description = 'DensaMed Role Mirror'
     _order = 'densamed_id'
 
-    densamed_id = fields.BigInt(string='DensaMed Role ID', required=True, index=True,
-                                readonly=True, copy=False)
+    densamed_id = fields.Integer(string='DensaMed Role ID', required=True, index=True,
+                                 readonly=True, copy=False)
     role_name = fields.Char(required=True, readonly=True)
     description = fields.Text(readonly=True)
     group_map_ids = fields.One2many('densamed_bridge.role_group_map',

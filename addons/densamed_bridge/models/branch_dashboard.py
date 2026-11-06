@@ -23,7 +23,7 @@ class DensamedBranchDashboard(models.Model):
     _table = 'densamed_branch_dashboard_v'
     _order = 'branch_code'
 
-    id = fields.BigInt(string='Company ID', readonly=True)          # res.company.id
+    id = fields.Integer(string='Company ID', readonly=True)          # res.company.id
     branch_code = fields.Char(readonly=True)
     branch_name = fields.Char(readonly=True)
     branch_active = fields.Boolean(readonly=True)
@@ -50,6 +50,15 @@ class DensamedBranchDashboard(models.Model):
             cr.execute("SELECT to_regclass(%s) IS NOT NULL", ('public.' + name,))
             return cr.fetchone()[0]
 
+        def column_exists(table, column):
+            cr.execute("""
+                SELECT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = %s AND column_name = %s
+                )
+            """, (table, column))
+            return cr.fetchone()[0] or False
+
         po = ("(SELECT count(*) FROM purchase_order po"
               " WHERE po.company_id = c.id"
               " AND po.state NOT IN ('purchase','cancel','done'))"
@@ -58,6 +67,20 @@ class DensamedBranchDashboard(models.Model):
               " WHERE so.company_id = c.id"
               " AND so.state NOT IN ('sale','cancel','done'))"
               if table_exists('sale_order') else "0")
+
+        lot_exp = column_exists('stock_lot', 'expiration_date')
+        exp_30 = ("(SELECT count(*) FROM stock_lot l"
+                  " WHERE l.expiration_date IS NOT NULL"
+                  " AND l.expiration_date <= CURRENT_DATE + 30)"
+                  if lot_exp else "0")
+        exp_60 = ("(SELECT count(*) FROM stock_lot l"
+                  " WHERE l.expiration_date IS NOT NULL"
+                  " AND l.expiration_date <= CURRENT_DATE + 60)"
+                  if lot_exp else "0")
+        exp_90 = ("(SELECT count(*) FROM stock_lot l"
+                  " WHERE l.expiration_date IS NOT NULL"
+                  " AND l.expiration_date <= CURRENT_DATE + 90)"
+                  if lot_exp else "0")
 
         cr.execute("""
             CREATE OR REPLACE VIEW %s AS (
@@ -68,19 +91,9 @@ class DensamedBranchDashboard(models.Model):
                     c.active                                AS branch_active,
                     (SELECT count(*) FROM stock_warehouse w
                       WHERE w.company_id = c.id AND w.active)          AS warehouse_count,
-                    -- Lots are company-scoped through their product; products
-                    -- synced by this bridge stay GLOBAL (company_id unset), so
-                    -- every branch sees them (spec Deliverable 2). Counting
-                    -- all lots here matches that global product master.
-                    (SELECT count(*) FROM stock_lot l
-                      WHERE l.expiration_date IS NOT NULL
-                        AND l.expiration_date <= CURRENT_DATE + 30)    AS lots_expiring_30,
-                    (SELECT count(*) FROM stock_lot l
-                      WHERE l.expiration_date IS NOT NULL
-                        AND l.expiration_date <= CURRENT_DATE + 60)    AS lots_expiring_60,
-                    (SELECT count(*) FROM stock_lot l
-                      WHERE l.expiration_date IS NOT NULL
-                        AND l.expiration_date <= CURRENT_DATE + 90)    AS lots_expiring_90,
+                    %s                                      AS lots_expiring_30,
+                    %s                                      AS lots_expiring_60,
+                    %s                                      AS lots_expiring_90,
                     %s                                      AS open_po_count,
                     %s                                      AS open_so_count,
                     COALESCE((SELECT sum(q.quantity)
@@ -92,4 +105,4 @@ class DensamedBranchDashboard(models.Model):
                   LEFT JOIN res_partner p ON p.id = c.partner_id
                  WHERE c.x_densamed_branch_id IS NOT NULL
             )
-        """ % (self._table, po, so))
+        """ % (self._table, exp_30, exp_60, exp_90, po, so))

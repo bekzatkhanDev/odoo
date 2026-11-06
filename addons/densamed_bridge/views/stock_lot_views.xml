@@ -6,7 +6,7 @@
         <field name="model">stock.lot</field>
         <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
-            <field name="expiration_date" position="after">
+            <field name="name" position="after">
                 <field name="days_to_expiry"/>
                 <field name="densamed_id"/>
                 <field name="densamed_warehouse_id"/>
@@ -15,16 +15,6 @@
         </field>
     </record>
 
-    <record id="view_production_lot_tree_densamed" model="ir.ui.view">
-        <field name="name">stock.lot.tree.inherit.densamed.bridge</field>
-        <field name="model">stock.lot</field>
-        <field name="inherit_id" ref="stock.product_lot_view_tree"/>
-        <field name="arch" type="xml">
-            <field name="expiration_date" position="after">
-                <field name="days_to_expiry" optional="show"/>
-                <field name="densamed_warehouse_id" optional="hide"/>
-            </field>
-        </field>
-    </record>
-
-</odoo>
+        <!-- Tree view inheritance removed: stock.product_lot_view_tree
+             does not exist in Odoo 17 Community. -->
+    </odoo>
