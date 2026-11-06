@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_densamed_sale_root" name="Сату" sequence="25"
+              groups="group_densamed_sale_user" web_icon="sale,static/description/icon.png"/>
+
+    <menuitem id="menu_densamed_sale_orders" name="Sales" parent="menu_densamed_sale_root"
+              action="action_densamed_sale" sequence="10"/>
+
+    <menuitem id="menu_densamed_sale_analysis" name="Analysis" parent="menu_densamed_sale_root"
+              action="action_densamed_sale_analysis" sequence="20"
+              groups="group_densamed_sale_manager"/>
+
+</odoo>

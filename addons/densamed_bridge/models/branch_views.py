@@ -14,9 +14,10 @@ class BranchMixin(models.AbstractModel):
     _name = 'densamed_bridge.branch_mixin'
     _description = 'DensaMed Branch (via company) mixin'
 
-    # NOTE: company_id is NOT defined on this abstract mixin; related fields
-    # referencing company_id are declared on the concrete models that inherit
-    # company_id natively (purchase.order, sale.order, etc.).
+    x_densamed_branch_id = fields.BigInt(
+        string='DensaMed Branch ID',
+        related='company_id.x_densamed_branch_id',
+        store=True, readonly=True, index=True)
 
 
 class PurchaseOrder(models.Model):
@@ -27,7 +28,7 @@ class PurchaseOrder(models.Model):
         'res.company', string='Branch',
         related='company_id', store=False, readonly=True,
         help='The branch IS the company (modelling decision, see res_company.py).')
-    x_densamed_branch_id = fields.Integer(
+    x_densamed_branch_id = fields.BigInt(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, readonly=True, index=True)
 
@@ -38,7 +39,7 @@ class SaleOrder(models.Model):
     branch_id = fields.Many2one(
         'res.company', string='Branch',
         related='company_id', store=False, readonly=True)
-    x_densamed_branch_id = fields.Integer(
+    x_densamed_branch_id = fields.BigInt(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, readonly=True, index=True)
 
@@ -49,7 +50,7 @@ class StockPicking(models.Model):
     branch_id = fields.Many2one(
         'res.company', string='Branch',
         related='company_id', store=False, readonly=True)
-    x_densamed_branch_id = fields.Integer(
+    x_densamed_branch_id = fields.BigInt(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, readonly=True, index=True)
 
@@ -63,6 +64,6 @@ class StockQuant(models.Model):
     branch_id = fields.Many2one(
         'res.company', string='Branch',
         related='company_id', store=False, readonly=True)
-    x_densamed_branch_id = fields.Integer(
+    x_densamed_branch_id = fields.BigInt(
         string='DensaMed Branch ID', related='company_id.x_densamed_branch_id',
         store=True, readonly=True, index=True)

@@ -44,6 +44,8 @@ SQL-view backed Branch Dashboard.
         'views/stock_location_views.xml',
         'views/stock_lot_views.xml',
         'views/branch_views.xml',                           # NEW
+        'data/ir_cron_data.xml',
+        'data/role_group_map_defaults.csv',                 # NEW
     ],
     'application': True,
     'installable': True,

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Sales analysis on completed lines (pivot / graph / list). -->
+    <record id="view_densamed_sale_line_tree" model="ir.ui.view">
+        <field name="name">densamed.sale.line.tree</field>
+        <field name="model">densamed.sale.line</field>
+        <field name="arch" type="xml">
+            <tree string="Sold Medicines" create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="sale_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="quantity" sum="Qty"/>
+                <field name="subtotal" sum="Total"/>
+                <field name="margin_amount" groups="densamed_sale.group_densamed_sale_manager" sum="Gross Profit"/>
+                <field name="currency_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_densamed_sale_line_pivot" model="ir.ui.view">
+        <field name="name">densamed.sale.line.pivot</field>
+        <field name="model">densamed.sale.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Sales Analysis">
+                <field name="date" interval="month" type="row"/>
+                <field name="product_id" type="col"/>
+                <field name="subtotal" type="measure"/>
+                <field name="quantity" type="measure"/>
+                <field name="margin_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_densamed_sale_line_graph" model="ir.ui.view">
+        <field name="name">densamed.sale.line.graph</field>
+        <field name="model">densamed.sale.line</field>
+        <field name="arch" type="xml">
+            <graph string="Sales Analysis" type="bar">
+                <field name="product_id"/>
+                <field name="subtotal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_densamed_sale_line_search" model="ir.ui.view">
+        <field name="name">densamed.sale.line.search</field>
+        <field name="model">densamed.sale.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Sold Medicines">
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="sale_id"/>
+                <filter string="Rx medicines" name="rx" domain="[('requires_prescription', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Medicine" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Branch" name="group_company" context="{'group_by': 'company_id'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_densamed_sale_analysis" model="ir.actions.act_window">
+        <field name="name">Sales Analysis</field>
+        <field name="res_model">densamed.sale.line</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="domain">[('state', '=', 'completed')]</field>
+        <field name="search_view_id" ref="view_densamed_sale_line_search"/>
+    </record>
+
+</odoo>
