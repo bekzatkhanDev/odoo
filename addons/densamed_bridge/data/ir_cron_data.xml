@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Per-target sync crons (Deliverable 4). Every target goes through
+         densamed.job_runner.run_job(), which stays inert (state='skipped')
+         until an admin enables res.config.settings densamed_enable_sync
+         (ir.config_parameter 'densamed_bridge.enable_sync'), so a fresh DB
+         never receives surprise writes. Intervals stagger the load:
+         master data hourly, transactional data every 15-30 min. -->
+    <data noupdate="1">
+        <record id="ir_cron_sync_branches" model="ir.cron">
+            <field name="name">DensaMed: sync branches -&gt; companies</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_branches()</field>
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_jobs" model="ir.cron">
+            <field name="name">DensaMed: sync roles -&gt; jobs</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_jobs()</field>
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_employees" model="ir.cron">
+            <field name="name">DensaMed: sync employees</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_employees()</field>
+            <field name="interval_number">30</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_products" model="ir.cron">
+            <field name="name">DensaMed: sync medicines -&gt; products</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_products()</field>
+            <field name="interval_number">15</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_warehouses" model="ir.cron">
+            <field name="name">DensaMed: sync warehouses</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_warehouses()</field>
+            <field name="interval_number">30</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_locations" model="ir.cron">
+            <field name="name">DensaMed: sync storage locations</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_locations()</field>
+            <field name="interval_number">30</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <record id="ir_cron_sync_lots" model="ir.cron">
+            <field name="name">DensaMed: sync batches -&gt; lots</field>
+            <field name="model_id" ref="model_densamed_sync"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_lots()</field>
+            <field name="interval_number">15</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+        <!-- Retention: keep the last 30 days of sync_log rows. -->
+        <record id="ir_cron_purge_sync_log" model="ir.cron">
+            <field name="name">DensaMed: purge old sync logs</field>
+            <field name="model_id" ref="model_densamed_bridge_sync_log"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_purge_old_logs()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+        </record>
+    </data>
+</odoo>

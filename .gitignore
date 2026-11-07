@@ -11,6 +11,8 @@ build/
 venv/
 filestore/
 data/
+# ...but Odoo module seed/data files must be tracked:
+!addons/densamed_bridge/data/
 addons/__init__.py.bak
 .vscode/
 .idea/
