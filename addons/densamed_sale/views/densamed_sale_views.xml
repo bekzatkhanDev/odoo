@@ -49,7 +49,7 @@
                         <group>
                             <field name="date" readonly="state != 'draft'"/>
                             <field name="user_id"/>
-                            <field name="company_id" groups="base.group_multi_company"
+                            <field name="company_id"
                                    readonly="state != 'draft'" options="{'no_create': True}"/>
                             <field name="default_payment_method"
                                    invisible="state != 'draft'"/>

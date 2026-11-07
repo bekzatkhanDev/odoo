@@ -55,6 +55,7 @@ class SaleExtended(models.Model):
         for s in self:
             s.loyalty_points_earned=max(0,int(s.amount_total//1000))
     @api.depends('line_ids.subtotal','promo_discount')
+    @api.depends('line_ids.subtotal','promo_discount')
     def _compute_amount_total(self):
         for s in self:
             s.amount_total=max(0,sum(s.line_ids.mapped('subtotal'))-s.promo_discount)

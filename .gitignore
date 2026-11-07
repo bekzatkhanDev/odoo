@@ -10,9 +10,9 @@ build/
 .venv/
 venv/
 filestore/
-data/
-# ...but Odoo module seed/data files must be tracked:
-!addons/densamed_bridge/data/
+# Ignore only a repo-root runtime data dir; Odoo module seed/data files
+# (addons/*/data/) must always be tracked:
+/data/
 addons/__init__.py.bak
 .vscode/
 .idea/
