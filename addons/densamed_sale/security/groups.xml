@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="module_category_densamed_sale" model="ir.module.category">
+            <field name="name">DensaMed Sales</field>
+            <field name="description">Pharmacy counter sales (Сату)</field>
+            <field name="sequence">32</field>
+        </record>
+
+        <!-- Cashier: creates and completes sales in its own branch.
+             Implies stock user only so lots/locations are readable for the
+             batch picker; the stock transfer itself runs through sudo() in
+             densamed.sale, never through the cashier's own rights. -->
+        <record id="group_densamed_sale_user" model="res.groups">
+            <field name="name">Cashier</field>
+            <field name="category_id" ref="module_category_densamed_sale"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user')), (4, ref('stock.group_stock_user'))]"/>
+            <field name="comment">Creates, completes and cancels pharmacy sales of its own branch.</field>
+        </record>
+
+        <record id="group_densamed_sale_manager" model="res.groups">
+            <field name="name">Sales Manager</field>
+            <field name="category_id" ref="module_category_densamed_sale"/>
+            <field name="implied_ids" eval="[(4, ref('group_densamed_sale_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Everything a cashier can do, plus deleting draft sales and the sales analysis.</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_densamed_sale_user,densamed.sale cashier,model_densamed_sale,group_densamed_sale_user,1,1,1,0
+access_densamed_sale_manager,densamed.sale manager,model_densamed_sale,group_densamed_sale_manager,1,1,1,1
+access_densamed_sale_hq,densamed.sale hq,model_densamed_sale,densamed_bridge.group_densamed_hq,1,0,0,0
+access_densamed_sale_line_user,densamed.sale.line cashier,model_densamed_sale_line,group_densamed_sale_user,1,1,1,1
+access_densamed_sale_line_manager,densamed.sale.line manager,model_densamed_sale_line,group_densamed_sale_manager,1,1,1,1
+access_densamed_sale_line_hq,densamed.sale.line hq,model_densamed_sale_line,densamed_bridge.group_densamed_hq,1,0,0,0
+access_densamed_sale_payment_user,densamed.sale.payment cashier,model_densamed_sale_payment,group_densamed_sale_user,1,1,1,1
+access_densamed_sale_payment_manager,densamed.sale.payment manager,model_densamed_sale_payment,group_densamed_sale_manager,1,1,1,1
+access_densamed_sale_payment_hq,densamed.sale.payment hq,model_densamed_sale_payment,densamed_bridge.group_densamed_hq,1,0,0,0

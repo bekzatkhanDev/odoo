@@ -1,0 +1,4 @@
+<odoo><data noupdate="1">
+<record id="promo_company_rule" model="ir.rule"><field name="name">Promotions by company</field><field name="model_id" ref="model_densamed_sale_promo"/><field name="domain_force">[('company_id','in',company_ids)]</field></record>
+<record id="alert_company_rule" model="ir.rule"><field name="name">Stock alerts by company</field><field name="model_id" ref="model_densamed_stock_alert"/><field name="domain_force">[('company_id','in',company_ids)]</field></record>
+</data></odoo>
