@@ -31,7 +31,7 @@ services:
       - ./initdb:/docker-entrypoint-initdb.d:ro
       - ./initdb/sql:/sql:ro            # addenda re-runnable by hand (psql -v ON_ERROR_STOP=1)
     healthcheck:                        # gates odoo + pgadmin `depends_on`
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${ODOO_DB} && pg_isready -U $${POSTGRES_USER} -d $${DENSAMED_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} && pg_isready -U $${POSTGRES_USER} -d $${DENSAMED_DB}"]
       interval: 5s
       timeout: 5s
       start_period: 20s                 # lets initdb scripts (schema+seed) finish first

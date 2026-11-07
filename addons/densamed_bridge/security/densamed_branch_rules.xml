@@ -18,8 +18,6 @@
            1. stock.lot has no company_id field in Community 17 (verified against
               odoo/addons/stock/models/stock_lot.py — do not invent fields), so
               cross-company lot leakage is closed via the product's company_ids.
-           2. stock.packing (the "To Pick"/"To Invoice" smart-button model) has
-              no core company rule but exposes source/destination move lines.
          Every rule here is global=False and pinned to OUR groups — never to
          base.group_user — so nobody can be locked out of their own records.
          ===================================================================== -->
@@ -56,19 +54,7 @@
             <field name="global" eval="False"/>
         </record>
 
-        <!-- 3) stock.packing ("To Pick"/"To Invoice" smart-button model): no
-              core company rule exists for it although it exposes move-line
-              data, so scope it through the move lines' companies. -->
-        <record id="rule_stock_packing_branch" model="ir.rule">
-            <field name="name">DensaMed: packing scoped to my branch moves</field>
-            <field name="model_id" ref="stock.model_stock_packing"/>
-            <field name="domain_force">['|', ('move_line_ids.company_id', '=', False),
-                                        ('move_line_ids.company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('densamed_bridge.group_densamed_branch_user'))]"/>
-            <field name="global" eval="False"/>
-        </record>
-
-        <!-- 4) hr.job / densamed mapping models are company-agnostic config;
+        <!-- 3) hr.job / densamed mapping models are company-agnostic config;
               no rule needed. Branch managers get write on operational docs
               through inherited functional groups (stock.group_stock_user ->
               stock.group_stock_manager, sales_team.group_sale_salesman ->

@@ -1,0 +1,7 @@
+# Enforce LF line endings for Docker init scripts (prevents
+# "cannot execute: required file not found" on Windows checkouts).
+initdb/hooks/*.sh text eol=lf
+initdb/sql/*.sql text eol=lf
+
+# Default: let git handle line endings as usual for everything else.
+* text=auto

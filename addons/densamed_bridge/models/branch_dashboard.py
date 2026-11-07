@@ -23,7 +23,7 @@ class DensamedBranchDashboard(models.Model):
     _table = 'densamed_branch_dashboard_v'
     _order = 'branch_code'
 
-    id = fields.BigInt(string='Company ID', readonly=True)          # res.company.id
+    id = fields.Integer(string='Company ID', readonly=True)         # res.company.id
     branch_code = fields.Char(readonly=True)
     branch_name = fields.Char(readonly=True)
     branch_active = fields.Boolean(readonly=True)

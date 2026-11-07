@@ -9,7 +9,7 @@
         <field name="arch" type="xml">
             <tree string="DensaMed Branches">
                 <field name="x_densamed_branch_id"/>
-                <field name="partner_ref" optional="show"/>
+                <field name="x_densamed_ref" optional="show"/>
                 <field name="name"/>
                 <field name="city" optional="show"/>
                 <field name="phone" optional="hide"/>
@@ -188,9 +188,9 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_sales_order_filter"/>
         <field name="arch" type="xml">
-            <filter name="my" position="after">
+            <search position="inside">
                 <field name="x_densamed_branch_id" string="Branch"/>
-            </filter>
+            </search>
         </field>
     </record>
 
@@ -211,9 +211,9 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_internal_search"/>
         <field name="arch" type="xml">
-            <filter name="product" position="after">
+            <search position="inside">
                 <field name="x_densamed_branch_id" string="Branch"/>
-            </filter>
+            </search>
         </field>
     </record>
 
@@ -232,7 +232,7 @@
     <record id="view_quant_search_branch" model="ir.ui.view">
         <field name="name">stock.quant.search.branch</field>
         <field name="model">stock.quant</field>
-        <field name="inherit_id" ref="stock.view_stock_quant_simple"/>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
         <field name="mode">extension</field>
         <field name="arch" type="xml">
             <search position="inside">
