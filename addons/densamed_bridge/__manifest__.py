@@ -24,6 +24,7 @@ SQL-view backed Branch Dashboard.
         'base',
         'product',
         'stock',
+        'product_expiry',           # expiration_date on stock.lot (days_to_expiry)
         'purchase',
         'sale_management',
         'hr',                       # NEW: hr.employee / hr.job
@@ -44,6 +45,7 @@ SQL-view backed Branch Dashboard.
         'views/stock_location_views.xml',
         'views/stock_lot_views.xml',
         'views/branch_views.xml',                           # NEW
+        'data/ir_cron_data.xml',
     ],
     'application': True,
     'installable': True,

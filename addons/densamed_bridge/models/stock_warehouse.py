@@ -39,7 +39,7 @@ class StockWarehouse(models.Model):
         derive from the mapped branch when possible."""
         if vals.get('densamed_id') and not vals.get('company_id'):
             comp = self.env['res.company'].sudo().search(
-                [('x_densamed_branch_id', '=', vals.get('densamed_branch_id') or -1)],
+                [('x_densamed_branch_id', '=', vals['densamed_id'] or -1)],
                 limit=1)
             if comp:
                 vals['company_id'] = comp.id

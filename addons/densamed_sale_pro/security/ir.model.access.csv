@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_promo_manager,promo manager,model_densamed_sale_promo,densamed_sale.group_densamed_sale_manager,1,1,1,1
+access_promo_user,promo user,model_densamed_sale_promo,densamed_sale.group_densamed_sale_user,1,0,0,0
+access_dashboard_manager,dashboard manager,model_densamed_sales_dashboard,densamed_sale.group_densamed_sale_manager,1,1,1,1
+access_alert_manager,alert manager,model_densamed_stock_alert,densamed_sale.group_densamed_sale_manager,1,1,1,1
+access_forecast_manager,forecast manager,model_densamed_sales_forecast,densamed_sale.group_densamed_sale_manager,1,1,1,1

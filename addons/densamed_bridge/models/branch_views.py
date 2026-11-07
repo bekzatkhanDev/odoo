@@ -10,15 +10,6 @@ without extra SQL.
 from odoo import fields, models
 
 
-class BranchMixin(models.AbstractModel):
-    _name = 'densamed_bridge.branch_mixin'
-    _description = 'DensaMed Branch (via company) mixin'
-
-    # NOTE: company_id is NOT defined on this abstract mixin; related fields
-    # referencing company_id are declared on the concrete models that inherit
-    # company_id natively (purchase.order, sale.order, etc.).
-
-
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
