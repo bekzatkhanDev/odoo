@@ -130,7 +130,7 @@ class DensamedSync(models.AbstractModel):
                 'categ_id': pharma.id,
                 'uom_id': uom.id,
                 'uom_po_id': uom.id,
-                'lst_price': float(row['retail_price']),
+                'list_price': float(row['retail_price']),
                 'min_stock': row.get('min_stock') or 0,
                 'requires_prescription': bool(row.get('requires_prescription')),
                 'generic_name': row.get('generic_name') or False,

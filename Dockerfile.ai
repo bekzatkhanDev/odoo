@@ -1,0 +1,6 @@
+FROM odoo:17
+
+USER root
+RUN pip3 install --no-cache-dir \
+    scikit-learn==1.5.2 joblib==1.4.2
+USER odoo

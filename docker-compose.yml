@@ -38,7 +38,10 @@ services:
       retries: 12
 
   odoo:
-    image: odoo:${ODOO_VERSION:?ODOO_VERSION must be set in .env}
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    image: densamed-odoo:${ODOO_VERSION:?ODOO_VERSION must be set in .env}-ai
     restart: unless-stopped
     depends_on:                         # starts only after db passed its healthcheck
       db:
