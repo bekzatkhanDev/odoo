@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ai_run_tree" model="ir.ui.view">
+        <field name="name">densamed.ai.run.tree</field>
+        <field name="model">densamed.ai.run</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="warehouse_id"/>
+                <field name="generated_at"/>
+                <field name="product_count"/>
+                <field name="model_mae"/>
+                <field name="baseline_mae"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_ai_run_form" model="ir.ui.view">
+        <field name="name">densamed.ai.run.form</field>
+        <field name="model">densamed.ai.run</field>
+        <field name="arch" type="xml">
+            <form string="AI Demand Forecast Demo">
+                <header><button name="action_generate" type="object" string="Train and Forecast" class="btn-primary"/></header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <div class="alert alert-warning" role="alert">Academic demonstration. The sales history is simulated and is not an ERP transaction or a real business prediction.</div>
+                    <group>
+                        <group><field name="company_id"/><field name="warehouse_id"/><field name="source_label"/></group>
+                        <group><field name="generated_at"/><field name="training_days"/><field name="product_count"/></group>
+                    </group>
+                    <group string="14-day chronological holdout evaluation (units per day)">
+                        <group><field name="baseline_mae"/><field name="baseline_rmse"/></group>
+                        <group><field name="model_mae"/><field name="model_rmse"/></group>
+                    </group>
+                    <notebook><page string="Seven-Day Recommendations">
+                        <field name="forecast_ids" readonly="1">
+                            <tree decoration-danger="recommended_qty &gt; 0">
+                                <field name="product_id"/><field name="average_daily"/><field name="trend_percent"/>
+                                <field name="predicted_qty"/><field name="available_qty"/><field name="incoming_qty"/>
+                                <field name="safety_stock"/><field name="recommended_qty"/>
+                            </tree>
+                        </field>
+                    </page></notebook>
+                    <group><field name="model_path"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="view_ai_forecast_tree" model="ir.ui.view">
+        <field name="name">densamed.ai.forecast.tree</field>
+        <field name="model">densamed.ai.forecast</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" decoration-danger="recommended_qty &gt; 0">
+                <field name="product_id"/><field name="warehouse_id"/><field name="predicted_qty"/>
+                <field name="available_qty"/><field name="incoming_qty"/><field name="safety_stock"/>
+                <field name="recommended_qty"/><field name="run_id"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_ai_forecast_form" model="ir.ui.view">
+        <field name="name">densamed.ai.forecast.form</field>
+        <field name="model">densamed.ai.forecast</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0"><sheet>
+                <h1><field name="product_id"/></h1>
+                <group><field name="run_id"/><field name="company_id"/><field name="warehouse_id"/></group>
+                <group string="Pattern"><field name="average_daily"/><field name="trend_percent"/></group>
+                <group string="Seven daily forecasts"><field name="day_1"/><field name="day_2"/><field name="day_3"/><field name="day_4"/><field name="day_5"/><field name="day_6"/><field name="day_7"/></group>
+                <group string="Replenishment"><field name="predicted_qty"/><field name="available_qty"/><field name="incoming_qty"/><field name="safety_stock"/><field name="recommended_qty"/></group>
+            </sheet></form>
+        </field>
+    </record>
+    <record id="view_ai_forecast_graph" model="ir.ui.view">
+        <field name="name">densamed.ai.forecast.graph</field>
+        <field name="model">densamed.ai.forecast</field>
+        <field name="arch" type="xml">
+            <graph string="Forecast Demand by Medicine" type="bar">
+                <field name="product_id"/>
+                <field name="predicted_qty" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="action_ai_runs" model="ir.actions.act_window">
+        <field name="name">AI Forecast Demo</field>
+        <field name="res_model">densamed.ai.run</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="action_ai_forecasts" model="ir.actions.act_window">
+        <field name="name">AI Recommendations</field>
+        <field name="res_model">densamed.ai.forecast</field>
+        <field name="view_mode">tree,form,graph</field>
+    </record>
+    <menuitem id="menu_ai_runs" name="AI Forecast Demo" parent="densamed_sale.menu_densamed_sale_root" action="action_ai_runs" sequence="30" groups="densamed_sale.group_densamed_sale_manager"/>
+    <menuitem id="menu_ai_recommendations" name="AI Recommendations" parent="densamed_sale.menu_densamed_sale_root" action="action_ai_forecasts" sequence="31" groups="densamed_sale.group_densamed_sale_manager"/>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_ai_run_manager,AI forecast run manager,model_densamed_ai_run,densamed_sale.group_densamed_sale_manager,1,1,1,1
+access_ai_forecast_manager,AI forecast manager,model_densamed_ai_forecast,densamed_sale.group_densamed_sale_manager,1,1,1,1
